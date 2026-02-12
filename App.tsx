@@ -41,10 +41,21 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notificationsCount, setNotificationsCount] = useState(3);
 
-  // Check for existing session
+  // Check for existing session and URL token parameter
   useEffect(() => {
-    const token = localStorage.getItem('betterhr_token');
-    if (token) setIsAuthenticated(true);
+    // Check URL params for token from auth callback
+    const params = new URLSearchParams(window.location.search);
+    const tokenParam = params.get('token');
+    
+    if (tokenParam) {
+      localStorage.setItem('betterhr_token', tokenParam);
+      setIsAuthenticated(true);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      const token = localStorage.getItem('betterhr_token');
+      if (token) setIsAuthenticated(true);
+    }
   }, []);
 
   const handleLogin = (token: string) => {

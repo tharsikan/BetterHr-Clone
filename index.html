@@ -1,44 +1,109 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>BetterHR Pro</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script async src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Inter', sans-serif;
-      -webkit-tap-highlight-color: transparent;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background-color: #f8fafc;
+      overflow: hidden;
     }
-    .safe-top { padding-top: env(safe-area-inset-top); }
-    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-    .safe-pt { padding-top: calc(0.75rem + env(safe-area-inset-top)); }
-    .safe-pb { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    #root { width: 100%; height: 100vh; }
+    html, body { width: 100%; height: 100%; }
   </style>
-<script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
-    "recharts": "https://esm.sh/recharts@^3.7.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
-    "drizzle-orm/": "https://esm.sh/drizzle-orm@^0.45.1/",
-    "drizzle-orm": "https://esm.sh/drizzle-orm@^0.45.1",
-    "@neondatabase/serverless": "https://esm.sh/@neondatabase/serverless@^1.0.2",
-    "drizzle-kit": "https://esm.sh/drizzle-kit@^0.31.9",
-    "@clerk/clerk-js": "https://esm.sh/@clerk/clerk-js@latest"
-  }
-}
-</script>
 </head>
-<body class="overflow-hidden">
+<body>
   <div id="root"></div>
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@19.2.4",
+      "react-dom": "https://esm.sh/react-dom@19.2.4",
+      "react-dom/client": "https://esm.sh/react-dom@19.2.4/client",
+      "lucide-react": "https://esm.sh/lucide-react@0.563.0"
+    }
+  }
+  </script>
+  <script type="module">
+    import React from 'react';
+    import ReactDOM from 'react-dom/client';
+    
+    const { useState, useEffect } = React;
+    
+    // Import Login component inline
+    const Login = ({ onLoginSuccess }) => {
+      const [isRegistering, setIsRegistering] = useState(false);
+      const [isLoading, setIsLoading] = useState(false);
+
+      return React.createElement(
+        'div',
+        { className: 'min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6' },
+        React.createElement(
+          'div',
+          { className: 'w-full max-w-sm space-y-8' },
+          React.createElement(
+            'div',
+            { className: 'text-center' },
+            React.createElement('div', { className: 'inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-3xl shadow-xl mb-6' }),
+            React.createElement('h1', { className: 'text-3xl font-black text-slate-900' }, 'BetterHR Pro'),
+            React.createElement('p', { className: 'text-slate-500 text-sm mt-2' }, 'Sign in to access your portal')
+          ),
+          React.createElement(
+            'form',
+            { 
+              onSubmit: (e) => {
+                e.preventDefault();
+                onLoginSuccess('test_token');
+              },
+              className: 'space-y-5'
+            },
+            React.createElement(
+              'div',
+              { className: 'space-y-4' },
+              React.createElement('input', { 
+                type: 'email', 
+                placeholder: 'Email',
+                className: 'w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10' 
+              }),
+              React.createElement('input', { 
+                type: 'password', 
+                placeholder: 'Password',
+                className: 'w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10' 
+              })
+            ),
+            React.createElement(
+              'button',
+              { 
+                type: 'submit',
+                className: 'w-full bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-700 transition-all'
+              },
+              isRegistering ? 'Get Started' : 'Sign In'
+            )
+          )
+        )
+      );
+    };
+
+    // Simple App component
+    const App = () => {
+      const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+      return isAuthenticated 
+        ? React.createElement('div', { className: 'p-8 text-center' }, React.createElement('h1', {}, '✅ Logged In!'))
+        : React.createElement(Login, { onLoginSuccess: (token) => {
+            localStorage.setItem('betterhr_token', token);
+            setIsAuthenticated(true);
+          }
+        });
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
 </body>
 </html>

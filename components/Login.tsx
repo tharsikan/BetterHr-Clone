@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Mail, 
   Lock, 
@@ -23,27 +23,62 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [role, setRole] = useState<UserRole>('EMPLOYEE');
   const [isLoading, setIsLoading] = useState(false);
 
-  // This would typically come from your Clerk/Neon Auth configuration
+  const NEON_AUTH_URL = process.env.NEON_AUTH_URL || '';
+  const REDIRECT_URL = `${window.location.origin}/auth/callback`;
+
+  useEffect(() => {
+    // Handle OAuth callback
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const code = params.get('code');
+    
+    if (token) {
+      localStorage.setItem('betterhr_token', token);
+      onLoginSuccess(token);
+    }
+  }, [onLoginSuccess]);
+
   const handleGoogleLogin = () => {
     setIsLoading(true);
-    // In a real Next.js app with Clerk, you would use:
-    // const { signIn } = useSignIn();
-    // await signIn.authenticateWithRedirect({ provider: 'google', ... });
-    
-    // For this prototype, we simulate the redirect to the auth provider
-    console.log("Redirecting to Neon Auth/Google...");
-    setTimeout(() => {
-      onLoginSuccess('real_google_jwt_token');
-    }, 1500);
+    // Redirect to Neon Auth with Google provider
+    const authUrl = new URL(`${NEON_AUTH_URL}?method=google`);
+    authUrl.searchParams.append('redirect_url', REDIRECT_URL);
+    authUrl.searchParams.append('role', role);
+    window.location.href = authUrl.toString();
   };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
+    
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      // Call Neon Auth endpoint for email/password auth
+      const response = await fetch(`${NEON_AUTH_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email, 
+          password,
+          is_register: isRegistering,
+          role: isRegistering ? role : undefined 
+        })
+      });
+
+      if (!response.ok) throw new Error('Auth failed');
+      
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem('betterhr_token', data.token);
+        onLoginSuccess(data.token);
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
       setIsLoading(false);
-      onLoginSuccess('mock_jwt_token');
-    }, 1500);
+    }
   };
 
   return (
@@ -97,11 +132,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           <div className="space-y-4">
             <div className="relative group">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input type="email" placeholder="Work Email" className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all" required />
+              <input name="email" type="email" placeholder="Work Email" className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all" required />
             </div>
             <div className="relative group">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input type="password" placeholder="Password" className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all" required />
+              <input name="password" type="password" placeholder="Password" className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all" required />
             </div>
           </div>
 
@@ -126,11 +161,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             className="h-12 border-slate-200/60 font-bold"
             onClick={handleGoogleLogin}
             disabled={isLoading}
+            type="button"
           >
             <img src="https://www.google.com/favicon.ico" className="w-4 h-4 mr-2" alt="Google" />
             Google
           </Button>
-          <Button variant="outline" className="h-12 border-slate-200/60 font-bold bg-[#1877F2] text-white hover:bg-[#1877F2]/90 border-none">
+          <Button variant="outline" className="h-12 border-slate-200/60 font-bold bg-[#1877F2] text-white hover:bg-[#1877F2]/90 border-none" disabled={isLoading}>
             <Facebook className="w-4 h-4 mr-2 fill-current" />
             Facebook
           </Button>
