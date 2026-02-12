@@ -1,0 +1,8 @@
+{
+  "name": "BetterHR Pro",
+  "description": "A comprehensive mobile-first HR management system featuring attendance tracking, leave management, payroll, and an AI-powered HR assistant.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
