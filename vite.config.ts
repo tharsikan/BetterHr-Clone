@@ -11,10 +11,8 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.API_KEY),
-        'process.env.NEON_AUTH_URL': JSON.stringify(env.NEON_AUTH_URL),
-        'process.env.NEON_JWKS_URL': JSON.stringify(env.NEON_JWKS_URL),
-        'process.env.DATABASE_URL': JSON.stringify(env.DATABASE_URL)
+        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
       },
       resolve: {
         alias: {

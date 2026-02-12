@@ -1,109 +1,97 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>BetterHR Pro</title>
-  <script async src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
       background-color: #f8fafc;
+      -webkit-font-smoothing: antialiased;
       overflow: hidden;
     }
-    #root { width: 100%; height: 100vh; }
-    html, body { width: 100%; height: 100%; }
+    #sanity-check {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+      color: white;
+      z-index: 9999;
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      margin-bottom: 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .fade-out { opacity: 0; pointer-events: none; }
   </style>
+  <script>
+    window.process = { 
+      env: { NODE_ENV: 'production' },
+      version: 'v18.0.0',
+      platform: 'browser',
+      nextTick: (cb) => setTimeout(cb, 0)
+    };
+
+    window.addEventListener('error', (event) => {
+      console.error('CRITICAL BOOT ERROR:', event.error);
+      const checker = document.getElementById('sanity-check');
+      if (checker) {
+        checker.style.background = '#ef4444';
+        checker.innerHTML = `
+          <div style="padding:40px; text-align:center; max-width:80%;">
+            <h1 style="font-weight:900; font-size: 24px;">BOOT ERROR</h1>
+            <p style="font-size:14px; margin-top:12px; opacity: 0.9;">${event.message}</p>
+            <button onclick="location.reload()" style="margin-top:24px; padding:12px 24px; background:white; color:#ef4444; border:none; border-radius:12px; font-weight:800; cursor:pointer;">RETRY</button>
+          </div>`;
+      }
+    });
+  </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.471.0?bundle",
+    "recharts": "https://esm.sh/recharts@2.15.0?bundle",
+    "@google/genai": "https://esm.sh/@google/genai@0.21.0?bundle",
+    "drizzle-orm": "https://esm.sh/drizzle-orm@0.36.0?bundle",
+    "drizzle-orm/neon-http": "https://esm.sh/drizzle-orm@0.36.0/neon-http?bundle",
+    "drizzle-orm/pg-core": "https://esm.sh/drizzle-orm@0.36.0/pg-core?bundle",
+    "@neondatabase/serverless": "https://esm.sh/@neondatabase/serverless@0.10.4?bundle",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "drizzle-orm/": "https://esm.sh/drizzle-orm@^0.45.1/",
+    "drizzle-kit": "https://esm.sh/drizzle-kit@^0.31.9"
+  }
+}
+</script>
 </head>
 <body>
+  <div id="sanity-check">
+    <div class="spinner"></div>
+    <div style="text-align: center;">
+      <h2 style="font-weight: 900; font-size: 28px; letter-spacing: -0.05em; margin: 0;">BetterHR<span style="color:rgba(255,255,255,0.6)">PRO</span></h2>
+      <p style="font-size: 10px; opacity: 0.7; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; margin-top: 8px;">Booting Portal...</p>
+    </div>
+  </div>
   <div id="root"></div>
-  <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@19.2.4",
-      "react-dom": "https://esm.sh/react-dom@19.2.4",
-      "react-dom/client": "https://esm.sh/react-dom@19.2.4/client",
-      "lucide-react": "https://esm.sh/lucide-react@0.563.0"
-    }
-  }
-  </script>
-  <script type="module">
-    import React from 'react';
-    import ReactDOM from 'react-dom/client';
-    
-    const { useState, useEffect } = React;
-    
-    // Import Login component inline
-    const Login = ({ onLoginSuccess }) => {
-      const [isRegistering, setIsRegistering] = useState(false);
-      const [isLoading, setIsLoading] = useState(false);
-
-      return React.createElement(
-        'div',
-        { className: 'min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6' },
-        React.createElement(
-          'div',
-          { className: 'w-full max-w-sm space-y-8' },
-          React.createElement(
-            'div',
-            { className: 'text-center' },
-            React.createElement('div', { className: 'inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-3xl shadow-xl mb-6' }),
-            React.createElement('h1', { className: 'text-3xl font-black text-slate-900' }, 'BetterHR Pro'),
-            React.createElement('p', { className: 'text-slate-500 text-sm mt-2' }, 'Sign in to access your portal')
-          ),
-          React.createElement(
-            'form',
-            { 
-              onSubmit: (e) => {
-                e.preventDefault();
-                onLoginSuccess('test_token');
-              },
-              className: 'space-y-5'
-            },
-            React.createElement(
-              'div',
-              { className: 'space-y-4' },
-              React.createElement('input', { 
-                type: 'email', 
-                placeholder: 'Email',
-                className: 'w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10' 
-              }),
-              React.createElement('input', { 
-                type: 'password', 
-                placeholder: 'Password',
-                className: 'w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10' 
-              })
-            ),
-            React.createElement(
-              'button',
-              { 
-                type: 'submit',
-                className: 'w-full bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-700 transition-all'
-              },
-              isRegistering ? 'Get Started' : 'Sign In'
-            )
-          )
-        )
-      );
-    };
-
-    // Simple App component
-    const App = () => {
-      const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-      return isAuthenticated 
-        ? React.createElement('div', { className: 'p-8 text-center' }, React.createElement('h1', {}, '✅ Logged In!'))
-        : React.createElement(Login, { onLoginSuccess: (token) => {
-            localStorage.setItem('betterhr_token', token);
-            setIsAuthenticated(true);
-          }
-        });
-    };
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(React.createElement(App));
-  </script>
+  <script type="module" src="./index.tsx"></script>
 </body>
 </html>

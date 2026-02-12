@@ -6,7 +6,10 @@ export enum View {
   LEAVE = 'leave',
   PAYROLL = 'payroll',
   AI_ASSISTANT = 'ai_assistant',
-  PROFILE = 'profile'
+  PROFILE = 'profile',
+  DIRECTORY = 'directory',
+  ANNOUNCEMENTS = 'announcements',
+  COMPLETING_PROFILE = 'completing_profile'
 }
 
 export type UserRole = 'ADMIN' | 'HR' | 'EMPLOYEE';
@@ -22,6 +25,9 @@ export interface Employee {
   joinDate: string;
   projectId?: string;
   projectName?: string;
+  status?: 'Office' | 'Remote' | 'On Leave';
+  phone?: string;
+  isNewUser?: boolean;
 }
 
 export interface AttendanceRecord {
@@ -35,49 +41,23 @@ export interface AttendanceRecord {
   hours: string;
   month: string;
   year: number;
-}
-
-export interface AdminDashboardData {
-  totalHeadcount: number;
-  pendingRequests: number;
-  activeProjects: number;
-  hrTeam: Array<{
-    id: string;
-    name: string;
-    scope: 'Global' | string; // Project name or 'Global'
-  }>;
-}
-
-export interface HRDashboardData {
-  scope: {
-    isGlobal: boolean;
-    projectName?: string;
-  };
-  attendanceToday: {
-    present: number;
-    late: number;
-    absent: number;
-    onLeave: number;
-  };
-}
-
-export interface EmployeeDashboardData {
-  clockInTime?: string;
-  clockOutTime?: string;
-  isClockedIn: boolean;
-  projectName: string;
-}
-
-export interface LeaveBalance {
-  type: string;
-  allocated: number;
-  used: number;
-  remaining: number;
-  color: string;
+  coordinates?: { lat: number; lng: number };
+  selfieUrl?: string;
 }
 
 export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
   timestamp: Date;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  category: 'Company' | 'Event' | 'Policy' | 'Alert';
+  date: string;
+  author: string;
+  imageUrl?: string;
+  readTime: string;
 }

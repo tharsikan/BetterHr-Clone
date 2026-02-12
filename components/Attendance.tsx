@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle2, 
   AlertCircle, 
@@ -9,116 +9,103 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   ClipboardList,
-  ChevronRight
+  ChevronRight,
+  Camera,
+  Navigation
 } from 'lucide-react';
+import { Button } from './ui/Button.tsx';
 
 interface AttendanceProps {
   onViewHistory: () => void;
 }
 
 export const Attendance: React.FC<AttendanceProps> = ({ onViewHistory }) => {
+  const [isClockedIn, setIsClockedIn] = useState(true);
+  const [location, setLocation] = useState<string>("Yangon HQ Office");
+
+  const handleClockToggle = () => {
+    setIsClockedIn(!isClockedIn);
+  };
+
   return (
-    <div className="p-4 space-y-6">
-      <header>
-        <h2 className="text-2xl font-bold text-slate-800">Attendance</h2>
-        <p className="text-slate-500 text-sm">Today, {new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+    <div className="p-5 space-y-6">
+      <header className="flex flex-col gap-1">
+        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Daily Attendance</h2>
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4 text-slate-400" />
+          <p className="text-slate-500 text-sm font-bold">{new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        </div>
       </header>
 
-      {/* Today's Clock Status (Clock Style Log) */}
-      <section className="bg-white rounded-[2.5rem] p-6 shadow-xl shadow-slate-200 border border-slate-100 flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span className="text-xs font-bold text-slate-600">Currently Clocked In</span>
+      <section className="bg-white rounded-[3rem] p-8 shadow-2xl shadow-slate-200 border border-slate-100 flex flex-col gap-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-blue-50/50 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-3 h-3 rounded-full ${isClockedIn ? 'bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-slate-300'}`}></div>
+            <span className="text-xs font-black text-slate-700 uppercase tracking-widest">
+              {isClockedIn ? 'Currently Working' : 'Off Duty'}
+            </span>
           </div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">HQ Office</span>
-        </div>
-
-        <div className="flex justify-around items-center py-4 relative">
-          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-slate-100"></div>
-          
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center border border-green-100">
-              <ArrowUpRight className="w-6 h-6 text-green-500" />
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Clock In</p>
-              <p className="text-xl font-black text-slate-800 tracking-tight">09:05 AM</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 opacity-30">
-            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-200">
-              <ArrowDownRight className="w-6 h-6 text-slate-400" />
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Clock Out</p>
-              <p className="text-xl font-black text-slate-800 tracking-tight">--:--</p>
-            </div>
+          <div className="px-3 py-1 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-2">
+            <Navigation className="w-3 h-3 text-blue-600" />
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">{location}</span>
           </div>
         </div>
 
-        <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white rounded-xl shadow-sm">
-              <MapPin className="w-4 h-4 text-blue-500" />
+        <div className="flex justify-around items-center py-6 relative z-10">
+          <div className="absolute left-1/2 top-4 bottom-4 w-px bg-slate-100"></div>
+          <div className={`flex flex-col items-center gap-3 transition-all ${!isClockedIn ? 'opacity-30' : ''}`}>
+            <div className="w-16 h-16 bg-green-50 rounded-3xl flex items-center justify-center border-2 border-green-100 shadow-sm">
+              <ArrowUpRight className="w-8 h-8 text-green-500" />
             </div>
-            <p className="text-xs font-bold text-slate-700">Yangon HQ Office</p>
+            <div className="text-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Clock In</p>
+              <p className="text-2xl font-black text-slate-900 tabular-nums tracking-tighter">09:05 AM</p>
+            </div>
           </div>
-          <button className="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-            Switch Location
-          </button>
+          <div className={`flex flex-col items-center gap-3 transition-all ${isClockedIn ? 'opacity-30' : ''}`}>
+            <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center border-2 border-slate-100 shadow-sm">
+              <ArrowDownRight className="w-8 h-8 text-slate-400" />
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Clock Out</p>
+              <p className="text-2xl font-black text-slate-900 tabular-nums tracking-tighter">--:--</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 relative z-10">
+          <Button 
+            onClick={handleClockToggle}
+            className={`py-5 rounded-[2rem] text-sm font-black shadow-xl ${isClockedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+          >
+            <Camera className="w-5 h-5 mr-3" />
+            {isClockedIn ? 'Clock Out' : 'Clock In'}
+          </Button>
+          <Button variant="outline" className="py-5 rounded-[2rem] text-sm font-black border-slate-200">
+            <MapPin className="w-5 h-5 mr-3 text-slate-400" />
+            Visit
+          </Button>
         </div>
       </section>
 
-      {/* Monthly Summary Cards */}
-      <section className="grid grid-cols-2 gap-3">
-        <div className="bg-blue-600 rounded-2xl p-4 text-white shadow-lg shadow-blue-100">
-          <div className="flex items-center gap-2 mb-2 opacity-80">
-            <CheckCircle2 className="w-4 h-4" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Present Days</span>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-black">18</span>
-            <span className="text-xs font-bold opacity-60">/ 22 days</span>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-2 mb-2 text-orange-500">
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Late Arrivals</span>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-black text-slate-800">3</span>
-            <span className="text-xs font-bold text-slate-400">times</span>
-          </div>
-        </div>
-      </section>
-
-      {/* View History Button */}
       <button 
         onClick={onViewHistory}
-        className="w-full bg-slate-900 text-white py-5 rounded-[2rem] font-bold flex items-center justify-between px-8 shadow-xl active:scale-[0.98] transition-all"
+        className="w-full bg-blue-50/50 border border-blue-100/50 p-6 rounded-[2.5rem] flex items-center justify-between active:scale-95 transition-all"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md">
-            <ClipboardList className="w-5 h-5 text-blue-400" />
+        <div className="flex items-center gap-5">
+          <div className="w-14 h-14 bg-white rounded-3xl flex items-center justify-center shadow-lg border border-blue-50">
+            <ClipboardList className="w-7 h-7 text-blue-600" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-black">Attendance History</p>
-            <p className="text-[10px] text-slate-400 font-medium">Detailed logs and filters</p>
+            <p className="text-lg font-black text-slate-900 leading-tight">Attendance Logs</p>
+            <p className="text-xs text-slate-500 font-bold">Review your past performance</p>
           </div>
         </div>
-        <ChevronRight className="w-5 h-5 text-slate-500" />
+        <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-100">
+          <ChevronRight className="w-6 h-6 text-blue-600" />
+        </div>
       </button>
-
-      {/* Info Notice */}
-      <section className="bg-slate-100/50 rounded-2xl p-4 flex gap-3 items-start border border-slate-200/50">
-        <Info className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
-          Daily attendance is finalized at 11:59 PM. Please ensure your clock-out records are accurate before the day ends.
-        </p>
-      </section>
     </div>
   );
 };

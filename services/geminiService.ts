@@ -2,36 +2,56 @@
 import { GoogleGenAI } from "@google/genai";
 
 export class HRService {
-  private ai: GoogleGenAI;
+  private ai: GoogleGenAI | null = null;
   private model = "gemini-3-flash-preview";
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    this.init();
+  }
+
+  private init() {
+    try {
+      const apiKey = typeof process !== 'undefined' ? process.env?.API_KEY : null;
+      if (apiKey) {
+        this.ai = new GoogleGenAI({ apiKey });
+      }
+    } catch (e) {
+      console.warn("HRService: Failed to access API_KEY from environment", e);
+    }
   }
 
   async getHRResponse(userPrompt: string, history: { role: 'user' | 'model', text: string }[]) {
     try {
-      const chat = this.ai.chats.create({
+      const apiKey = (typeof process !== 'undefined' && process.env?.API_KEY) || '';
+      if (!apiKey) {
+        return "I'm sorry, I can't process requests right now because my brain (API Key) is missing. Please check your configuration.";
+      }
+
+      const aiClient = new GoogleGenAI({ apiKey });
+      
+      const chat = aiClient.chats.create({
         model: this.model,
         config: {
-          systemInstruction: `You are 'BetterHR Assistant', a friendly and professional HR bot for a modern company. 
+          systemInstruction: `You are 'BetterHR Assistant', a friendly and professional HR bot for a modern company using the BetterHR Pro Android application.
           You help employees with:
-          1. Understanding company policies (standard global tech company policies).
-          2. Drafting leave requests or emails to managers.
-          3. Answering questions about payroll, insurance, and benefits.
-          4. Career development advice.
+          1. Company policies: leave, remote work, attendance, code of conduct.
+          2. Drafting professional emails to managers or HR.
+          3. Benefits info: health insurance, payroll, performance reviews.
+          4. Using the app: explaining how to clock in, apply for leave, or find payslips.
           
-          Keep responses concise, empathetic, and professional. Use markdown for lists and bold text. 
-          If a query is outside HR scope, politely steer them back.`,
+          Guidelines:
+          - Keep responses concise, supportive, and formatted with Markdown.
+          - Use bold text for key terms.
+          - If asked about specific sensitive employee data you don't have access to, guide them to contact their HR manager directly via the Directory in the app.
+          - Your tone is "Tech-Savvy Professional".`,
         },
       });
 
-      // Simple implementation since chat.sendMessage is preferred
       const result = await chat.sendMessage({ message: userPrompt });
       return result.text;
     } catch (error) {
       console.error("Gemini API Error:", error);
-      return "I'm sorry, I'm having trouble connecting to the HR mainframe. Please try again in a moment.";
+      return "I encountered a minor system error while processing your request. Please try again or contact support if the issue persists.";
     }
   }
 }

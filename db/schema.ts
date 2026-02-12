@@ -1,10 +1,9 @@
 
-import { pgTable, text, uuid, timestamp, pgSchema, foreignKey } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { pgTable, text, uuid, timestamp, pgSchema } from "drizzle-orm/pg-core";
 
 /**
  * 1. Reference the managed Neon Auth schema
- * Neon Auth typically stores user data in the 'neon_auth' or 'auth' schema.
+ * This is provided by Neon directly
  */
 export const neonAuthSchema = pgSchema("neon_auth");
 
@@ -22,7 +21,7 @@ export const authUsers = neonAuthSchema.table("users", {
 export const companies = pgTable("companies", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
-  companyCode: text("company_code").notNull().unique(), // e.g., 'CORE-123'
+  companyCode: text("company_code").notNull().unique(), 
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -30,35 +29,24 @@ export const companies = pgTable("companies", {
 // Projects (Within a Company)
 export const projects = pgTable("projects", {
   id: uuid("id").defaultRandom().primaryKey(),
-  companyId: uuid("company_id")
-    .notNull()
-    .references(() => companies.id, { onDelete: "cascade" }),
+  companyId: uuid("company_id").notNull(),
   name: text("name").notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Employee Profiles (Link between Auth User and HR Data)
+// Employee Profiles
 export const employeeProfiles = pgTable("employee_profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
-  // Link to Neon Auth User
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => authUsers.id, { onDelete: "cascade" }),
-  // Multi-tenant links
-  companyId: uuid("company_id")
-    .notNull()
-    .references(() => companies.id, { onDelete: "cascade" }),
-  projectId: uuid("project_id")
-    .references(() => projects.id, { onDelete: "set null" }),
-  
+  userId: uuid("user_id").notNull(),
+  companyId: uuid("company_id").notNull(),
+  projectId: uuid("project_id"),
   fullName: text("full_name").notNull(),
-  role: text("role").notNull(), // e.g., 'Senior Product Designer'
+  role: text("role").notNull(),
   department: text("department"),
   avatarUrl: text("avatar_url"),
   phoneNumber: text("phone_number"),
-  
-  status: text("status", { enum: ["ACTIVE", "INACTIVE", "PENDING"] }).default("PENDING"),
+  status: text("status").default("PENDING"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
